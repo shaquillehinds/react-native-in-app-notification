@@ -5,6 +5,8 @@
 
 A beautiful, customizable, and performant in-app notification system for React Native that just works. Built with React Native Reanimated for smooth 60fps animations and gesture support.
 
+<img src="https://raw.githubusercontent.com/shaquillehinds/react-native-in-app-notification/master/assets/inappnotification.gif" alt="example" height="500"/>
+
 ## ✨ Features
 
 - 🎨 **Fully Customizable** - Complete control over styling, sizing, and behavior
