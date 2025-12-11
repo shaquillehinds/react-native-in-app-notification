@@ -1,6 +1,6 @@
 {
   "name": "@shaquillehinds/react-native-in-app-notification",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A simple in app notification for react native that just works.",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
