@@ -56,12 +56,12 @@
     "react-native",
     "ios",
     "android",
-    "modal",
-    "popup",
-    "spot-modal",
-    "spot-popup",
-    "spot-menu",
-    "spot-modal"
+    "in-app-notification",
+    "notification",
+    "in-app-notification-modal",
+    "in-app-notification-popup",
+    "in-app-message",
+    "toast"
   ],
   "repository": {
     "type": "git",
