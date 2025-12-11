@@ -1,0 +1,23 @@
+import { ModalWrapper } from '@shaquillehinds/react-native-essentials';
+import { Notification } from './Notification';
+import { type InAppNotificationProps } from './notificationModal.types';
+
+export function InAppNotification(props: InAppNotificationProps) {
+  const { notifications, setNotifications } = props;
+  if (!notifications.length) return null; // uncomment this line when you done testing
+  return (
+    <ModalWrapper enableBackgroundContentPress>
+      {notifications.map((notification, index) => (
+        <Notification
+          notificationStyle={props.notificationStyle}
+          key={notification.id}
+          notification={notification}
+          index={index}
+          setNotifications={setNotifications}
+          notifications={notifications}
+          avoidStatusBar={props.avoidStatusBar}
+        />
+      ))}
+    </ModalWrapper>
+  );
+}
