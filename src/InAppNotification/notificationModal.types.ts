@@ -21,6 +21,7 @@ export type NotificationBase = {
   avoidStatusBar?: boolean;
   notifications: NotificationItem[];
   setNotifications: React.Dispatch<React.SetStateAction<NotificationItem[]>>;
+  defaultToExpanded?: boolean;
 } & NotificationSizeOptions;
 
 export type NotificationType = 'component' | 'data';
@@ -55,7 +56,11 @@ export type NotificationItem = {
 
 export type NotificationProps = {
   notification: NotificationItem;
+  isExpanded: boolean;
+  setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
   index: number;
+  numberOfNotifications: number;
+  removeNotification: (notificationId: string) => void;
 } & NotificationBase;
 
 export type InAppNotificationProps = NotificationBase;

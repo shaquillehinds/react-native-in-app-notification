@@ -9,6 +9,6 @@ export const notificationMountTimer = new Scheduler.SequentialTimer(
 
 export const notificationHeight = relativeY(8);
 // how much the notification will move down when another one lands
-export const notificationOffset = notificationHeight + notificationHeight * 0.1;
+export const notificationOffset = notificationHeight * 0.9;
 // how far off screen is the notification hidden before showing
 export const initialNotificationPosition = -(notificationHeight + relativeY(3));

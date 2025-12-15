@@ -1,3 +1,4 @@
+//$lf-ignore
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   type NotificationProps,
@@ -26,7 +27,12 @@ import {
 import type { ImageStyle, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 export default function NotificationController({
-  notifications,
+  index,
+  isExpanded,
+  setIsExpanded,
+  defaultToExpanded,
+  numberOfNotifications,
+  removeNotification,
   setNotifications,
   notification,
   avoidStatusBar,
@@ -61,6 +67,7 @@ export default function NotificationController({
   const opacity = useSharedValue(0);
   const translationY = useSharedValue(initialNotificationPosition);
   const prevTranslationY = useSharedValue(initialNotificationOffset);
+  const mounted = useRef(false);
 
   const notifAnimatedStyle = useAnimatedStyle(
     () => ({
@@ -134,34 +141,31 @@ export default function NotificationController({
     [orientation]
   );
 
-  const enterNotificiationAnimation = useCallback((iosDevice?: boolean) => {
-    'worklet';
-    if (prevTranslationY.value === 0) return;
-    let newVal = notificationOffset + prevTranslationY.value;
-    let ageValue = (initialNotificationOffset + notificationOffset) / newVal;
-    ageValue += iosDevice ? 0.55 : avoidStatusBar ? 0.63 : 0.75;
-    if (ageValue > 1) ageValue = 1;
-    if (ageValue < 1) {
-      if (ageValue > 0.9) newVal *= ageValue;
-      else if (ageValue < (iosDevice ? 0.73 : 0.82)) {
-        ageValue = 0;
-        newVal = 0;
-      } else
-        newVal *= ageValue + (iosDevice ? 0.13 : avoidStatusBar ? 0.02 : 0.025);
-    }
-    prevTranslationY.value = newVal;
-    scale.value = withTiming(ageValue, {
-      duration: notificationEnterDurationMilliS,
-      easing: Easing.bezier(0.8, 1.36, 0.6, 1),
-    });
-    opacity.value = withTiming(ageValue, {
-      duration: notificationEnterDurationMilliS,
-    });
-    translationY.value = withTiming(newVal, {
-      duration: notificationEnterDurationMilliS,
-      easing: Easing.bezier(0.8, 1.36, 0.6, 1),
-    });
-  }, []);
+  const enterNotificiationAnimation = useCallback(
+    (iosDevice: boolean) => {
+      'worklet';
+      if (prevTranslationY.value === 0) return;
+      const expandedVal = notificationOffset * (numberOfNotifications - index);
+      const shrunkVal = notificationOffset + prevTranslationY.value * 0.085;
+      let ageValue =
+        (initialNotificationOffset + notificationOffset) / expandedVal;
+      ageValue += iosDevice ? 0.65 : avoidStatusBar ? 0.85 : 0.95;
+      if (ageValue > 1) ageValue = 1;
+      prevTranslationY.value = expandedVal;
+      scale.value = withTiming(isExpanded ? 1 : ageValue, {
+        duration: notificationEnterDurationMilliS,
+        easing: Easing.bezier(0.8, 1.36, 0.6, 1),
+      });
+      opacity.value = withTiming(isExpanded ? 1 : ageValue, {
+        duration: notificationEnterDurationMilliS,
+      });
+      translationY.value = withTiming(isExpanded ? expandedVal : shrunkVal, {
+        duration: notificationEnterDurationMilliS,
+        easing: Easing.bezier(0.8, 1.36, 0.6, 1),
+      });
+    },
+    [isExpanded, index, numberOfNotifications]
+  );
 
   const leaveNotificationAnimation = useCallback(() => {
     'worklet';
@@ -173,7 +177,8 @@ export default function NotificationController({
 
   const handleLeave = useCallback(() => {
     notification.onNotificationLeave?.();
-  }, []);
+    removeNotification(notification.id);
+  }, [removeNotification, notification.id]);
 
   const onSwipeUp = useCallback(() => {
     setExiting(true);
@@ -197,11 +202,17 @@ export default function NotificationController({
   }, []);
 
   useEffect(() => {
-    if (notifications.length > onScreenAmount.current) {
-      if (!exiting.current) runOnUI(enterNotificiationAnimation)(isIOS);
+    if (numberOfNotifications > onScreenAmount.current) {
+      if (!exiting.current) runOnUI(enterNotificiationAnimation)(isIOS!!);
+    } else {
+      if (numberOfNotifications === 0 || numberOfNotifications === 1) {
+        if (!defaultToExpanded && isExpanded) setIsExpanded(false);
+        if (defaultToExpanded && !isExpanded) setIsExpanded(true);
+      }
+      if (!exiting.current) runOnUI(enterNotificiationAnimation)(isIOS!!);
     }
-    onScreenAmount.current = notifications.length;
-  }, [notifications.length]);
+    onScreenAmount.current = numberOfNotifications;
+  }, [numberOfNotifications, isExpanded, defaultToExpanded]);
   useEffect(() => {
     notification.onNotificationEnter && notification.onNotificationEnter();
     setTimeout(() => {
@@ -209,6 +220,14 @@ export default function NotificationController({
       runOnUI(leaveNotificationAnimation)();
     }, notificationVisibleDurationMilliS);
   }, []);
+
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+    } else {
+      enterNotificiationAnimation(isIOS!!);
+    }
+  }, [isExpanded]);
 
   return {
     relativeX,

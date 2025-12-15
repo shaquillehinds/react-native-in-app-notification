@@ -64,6 +64,7 @@ export function InAppNotificationProvider(
     <InAppNotificationContext.Provider value={value}>
       {props.children}
       <InAppNotification
+        defaultToExpanded={props.defaultToExpanded}
         notifications={notifications}
         setNotifications={setNotifications}
         notificationStyle={props.notificationStyle}

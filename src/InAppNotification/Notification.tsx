@@ -2,11 +2,16 @@ import { type NotificationProps } from './notificationModal.types';
 import Animated from 'react-native-reanimated';
 import {
   ComponentMounter,
+  Layout,
+  maxZIndex,
+  Press,
+  relativeY,
   SwipeGesture,
 } from '@shaquillehinds/react-native-essentials';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import NotificationController from './notification.controller';
 import { notificationStyles } from './notificationModal.styles';
+import { ChevronUp } from './svgs/ChevronUp';
 
 let ImageComponent: typeof Image;
 let type: 'expo' | 'fast-image' | 'react-native' = 'expo';
@@ -117,6 +122,33 @@ export function Notification(props: NotificationProps) {
             </View>
           </View>
         )}
+        {props.numberOfNotifications > 1 &&
+          props.index === 0 &&
+          props.isExpanded && (
+            <Press onPress={() => props.setIsExpanded(false)}>
+              <Layout
+                style={{ zIndex: maxZIndex }}
+                bottom={-relativeY(4)}
+                left={0}
+                right={0}
+                center
+                absolute
+              >
+                <Layout
+                  height={3}
+                  width={25}
+                  borderRadius={'full'}
+                  backgroundColor="rgba(0, 0, 0, 0.15)"
+                  borderWidth={'thin'}
+                  borderColor="#rgba(255, 255, 255, 0.25)"
+                  center
+                  centerX
+                >
+                  <ChevronUp size={28} color="#eee" />
+                </Layout>
+              </Layout>
+            </Press>
+          )}
       </Animated.View>
     </SwipeGesture>
   );
@@ -133,10 +165,13 @@ export function Notification(props: NotificationProps) {
           <TouchableOpacity
             activeOpacity={props.notification.activeOpacity || 0.8}
             onPress={() => {
-              props.notification.onPress?.(
-                props.notification.content,
-                controller.onSwipeUp
-              );
+              if (!props.isExpanded && props.numberOfNotifications > 1) {
+                props.setIsExpanded(true);
+              } else
+                props.notification.onPress?.(
+                  props.notification.content,
+                  controller.onSwipeUp
+                );
             }}
           >
             {Component}
